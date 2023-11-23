@@ -18,7 +18,7 @@
 장소에 따른 상수관로 누수음성 데이터셋(HZ)  
 옥내누수, 옥외누수, 기계/전기음, 환경음, 정상음 포함
 # Methodology
-Randomforest, xgboost lightbm, 바예시안 최적화 기법 세 가지가 현재 후보군
+Randomforest, xgboost, lightbm, 바예시안 최적화 기법 네 가지가 현재 후보군
 # Evaluation & Analysis
 
 # Related Work
