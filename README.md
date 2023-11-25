@@ -22,7 +22,7 @@ test와 train셋으로 분리함. Test,Train은 xgboost를 활용한 코드에 �
 Randomforest, xgboost
 # Evaluation & Analysis
 # 1. R을 이용한 Randomforest 코드
-1-1. 불러올 함수
+### 1-1. 불러올 함수
 
 library('ggplot2') # visualization
 
@@ -35,7 +35,7 @@ library('dplyr') # data manipulation
 library('randomForest') # classification algorithm
 
 
-1-2 파일입력
+### 1-2 파일입력
 
 train <- read.csv('./training.csv', stringsAsFactors = F)
 
@@ -64,12 +64,12 @@ test$mean1 <- rowMeans(test[,c('X100HZ' ,'X110HZ','X120HZ','X130HZ','X140HZ',
 .
 
 
-1-3임의의 seed값 배정
+### 1-3임의의 seed값 배정
 
 set.seed(456)
 
 
-1-4 랜덤 포레스트 모델 형성 (시간 측정)
+### 1-4 랜덤 포레스트 모델 형성 (시간 측정)
  
  코드 구동시 5분 34초정도 걸렸습니다.
 
@@ -99,14 +99,14 @@ system.time(rf_model <- randomForest(factor(leaktype) ~
                            data = train)
 
                            
-1-5 모델 에러 표시
+### 1-5 모델 에러 표시
 
 plot(rf_model, ylim=c(0,0.36))
 
 legend('topright', colnames(rf_model$err.rate), col=1:3, fill=1:3)
 
 
-1-6 중요도 분석
+### 1-6 중요도 분석
 
 importance    <- importance(rf_model)
 
@@ -121,7 +121,7 @@ rankImportance <- varImportance %>%
   mutate(Rank = paste0('#',dense_rank(desc(Importance))))
 
 
-1-7 test파일 예측
+### 1-7 test파일 예측
 
 prediction <- predict(rf_model, test)
 
@@ -144,12 +144,12 @@ false=count(solution,accurate==1)
 accuracy = true/(true+false)
 
 
-1-8 정답률
+### 1-8 정답률
 
 accuracy[2,2]
 
 
-1-9 파일 출력
+### 1-9 파일 출력
 
 write.csv(solution, file = 'leak_solution.csv', row.names = F)
 
