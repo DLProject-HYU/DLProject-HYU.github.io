@@ -25,8 +25,10 @@
 Randomforest, xgboost를 사용했습니다.
 
 # Evaluation & Analysis
-  1. 랜덤 포레스트
-    1-1. 랜덤포레스트 기본 모델
+  **1. 랜덤 포레스트**
+
+    **1-1. 랜덤포레스트 기본 모델**
+
 실제 누수 2가지(in, out), 잘못된 누수 감지 2가지(noise, other), 정상음 1가지(normal)로 총 5개 라벨을 이용하여 Randomforst 모델을 활용하여 학습시켰습니다.
 ```
 from sklearn.model_selection import train_test_split
@@ -47,14 +49,11 @@ y_pred = rf_classifier.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
 print("Accuracy:", accuracy)
 ```
-```OUTPUT
 Accuracy: 0.9114520898265803
-```
 ```
 from sklearn.metrics import classification_report
 print(classification_report(y_test, y_pred))
 ```
-```OUTPUT
               precision    recall  f1-score   support
 
           in       0.91      0.87      0.89      2622
@@ -66,10 +65,11 @@ print(classification_report(y_test, y_pred))
     accuracy                           0.91     12513
    macro avg       0.90      0.87      0.89     12513
 weighted avg       0.91      0.91      0.91     12513
-```
+
 5개 라벨 예측의 전체 정확도는 91.1%였습니다.
 
-    1-2. 랜덤포레스트 피쳐 가공 모델
+    **1-2. 랜덤포레스트 피쳐 가공 모델**
+
 0~5120Hz 범위의 소리를 10Hz 단위로 측정하고, Max값 또한 20개를 포함한 데이터이다보니 컬럼의 수가 너무 많았습니다. 따라서 중요한 데이터를 찾아낼 필요가 있었습니다.
 ```
 import matplotlib.pyplot as plt
@@ -99,13 +99,10 @@ y_pred = rf_classifier_2.predict(X_test_2)
 accuracy = accuracy_score(y_test, y_pred)
 print("Accuracy:", accuracy)
 ```
-```Output
 Accuracy: 0.9303923919124111
-```
 ```
 print(classification_report(y_test, y_pred))
 ```
-```OUTPUT
               precision    recall  f1-score   support
 
           in       0.92      0.91      0.91      2622
@@ -117,23 +114,124 @@ print(classification_report(y_test, y_pred))
     accuracy                           0.93     12513
    macro avg       0.92      0.90      0.91     12513
 weighted avg       0.93      0.93      0.93     12513
-```
+
 전체 정확도 뿐만 아니라, 각각의 라벨들에 대한 정확도 모두 향상되었음을 확인할 수 있습니다.
 
-  2. XGBoost
-    2-1. XGBoost 피쳐 가공 모델
+  **2. XGBoost**
+
+    **2-1. XGBoost 피쳐 가공 모델**
+
 예측 성능을 올리기 위해, Randomforest 모델 대신 XGBoost를 사용해봤습니다.
+```
+pip install xgboost
+```
+```
+from xgboost import XGBClassifier
+from sklearn.preprocessing import LabelEncoder
+label_encoder = LabelEncoder()
+y_train_encoded = label_encoder.fit_transform(y_train)
+y_test_encoded = label_encoder.transform(y_test.values.ravel())
 
-오히려 정확도가 낮아졌는데, 이는 XGBoost가 많은 하이퍼 파라미터를 가지고 있고, 이에 민감한 알고리즘 때문입니다.
-따라서 이에 맞는 최적화가 필요하기 때문에 베이지안 최적화를 이용해봤습니다.
+xgb_classifier = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss', random_state=42)
+xgb_classifier.fit(X_train_2, y_train_encoded)
 
+y_pred = xgb_classifier.predict(X_test_2)
+accuracy = accuracy_score(y_test_encoded, y_pred)
 
+print("Accuracy:", accuracy)
+```
+Accuracy: 0.8955486294253976
+
+오히려 정확도가 낮아졌는데, 이는 XGBoost가 많은 하이퍼파라미터를 가지고 있고, 이에 민감한 알고리즘 때문입니다.
+
+    **2-2. XGBoost 피쳐 가공+ 하이퍼파라미터 튜닝 모델**
+
+XGBoost는 연산 비용이 높은 알고리즘이기 때문에, Grid-Search나 Random-Search보다 효율적인 베이지안 최적화를 이용했습니다.
+```
+pip install bayesian-optimization
+```
+베이지안 최적화를 통해, XGBoost의 하이퍼파라미터를 개선시켰습니다.
+```
+from bayes_opt import BayesianOptimization
+from sklearn.model_selection import cross_val_score
+
+def xgb_eval(eta, min_child_weight, gamma, max_depth, colsample_bytree, lambda_, alpha):
+    params = {
+        'eta': eta,
+        'min_child_weight': min_child_weight,
+        'gamma': gamma,
+        'max_depth': int(max_depth),
+        'colsample_bytree': colsample_bytree,
+        'lambda': lambda_,
+        'alpha': alpha,
+        'eval_metric': 'mlogloss',
+        'use_label_encoder': False,
+        'tree_method': 'hist',
+        'device': 'cuda',
+        'random_state': 42
+    }
+    xgb_model = XGBClassifier(**params)
+    scores = cross_val_score(xgb_model, X_train_2, y_train_encoded, cv=3, scoring='accuracy')
+    return scores.mean()
+
+pbounds = {
+    'eta': (0.001, 1.),
+    'min_child_weight': (0, 10),
+    'gamma': (0, 5),
+    'max_depth': (3, 50),
+    'colsample_bytree': (0.3, 1.0),
+    'lambda_': (0, 3),
+    'alpha': (0, 3),
+}
+
+optimizer = BayesianOptimization(f=xgb_eval, pbounds=pbounds, random_state=42)
+
+optimizer.maximize(init_points=5, n_iter=200)
+```
+optimizer.max
+```
+{'target': 0.93230908104687,
+ 'params': {'alpha': 0.5893547220720841,
+  'colsample_bytree': 1.0,
+  'eta': 0.20334070944650803,
+  'gamma': 0.0,
+  'lambda_': 2.7303408686032196,
+  'max_depth': 27.90916614548846,
+  'min_child_weight': 7.301529163320516}}
+```
+params = {
+    'alpha': 0.5893547220720841,
+    'colsample_bytree': 1.0,
+    'eta': 0.20334070944650803,
+    'gamma': 0.0,
+    'lambda': 2.7303408686032196,
+    'max_depth': 27,
+    'min_child_weight': 7.301529163320516,
+    'eval_metric': 'mlogloss',
+    'use_label_encoder': False,
+    'tree_method': 'hist',
+    'device': 'cuda',
+    'random_state': 42
+}
+
+xgb_classifier = XGBClassifier(**params)
+xgb_classifier.fit(X_train_2, y_train_encoded)
+
+y_pred = xgb_classifier.predict(X_test_2)
+accuracy = accuracy_score(y_test_encoded, y_pred)
+
+print("Accuracy:", accuracy)
+```
+Accuracy: 0.9446175976983937
+
+지금까지의 모델들의 정확도를 비교해보면
+```
 랜덤 포레스트 기본 모델 : Accuracy: 0.9114520898265803
 랜덤 포레스트 피쳐 가공 : Accuracy: 0.9303923919124111
 XGBoost 하이퍼파라미터 최적화 전 (피쳐 가공) : Accuracy: 0.8955486294253976
 XGBoost 하이퍼파라미터 최적화 후 (피쳐 가공) : Accuracy: 0.9446175976983937
-
-베이지언 최적화를 통해 하이퍼파라미터를 최적화 해주었을 경우 랜덤 포레스트 모델보다 높은 정확도를 보였습니다.
+```
+베이지언 최적화를 통해 하이퍼파라미터를 최적화 해주었을 경우 랜덤 포레스트 모델보다 높은 정확도를 보임을 확인했습니다.
 
 AIHub의 상관누수 데이터에서는 별도의 Test Data를 제공하기 때문에, 랜덤 포레스트 기본모델, 랜덤포레스트 피쳐 가공 모델, XGBoost 피쳐 가공 모델, XGBoost 피쳐 가공 + 하이퍼파라미터 튜닝 모델 4가지의 성능을 비교해봤습니다.
 
