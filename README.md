@@ -25,6 +25,8 @@
 Randomforest, xgboost를 사용했습니다.
 
 # Evaluation & Analysis
+  1. 랜덤 포레스트
+    1-1. 랜덤포레스트 기본 모델
 실제 누수 2가지(in, out), 잘못된 누수 감지 2가지(noise, other), 정상음 1가지(normal)로 총 5개 라벨을 이용하여 Randomforst 모델을 활용하여 학습시켰습니다.
 ```
 from sklearn.model_selection import train_test_split
@@ -45,8 +47,29 @@ y_pred = rf_classifier.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
 print("Accuracy:", accuracy)
 ```
+```OUTPUT
+Accuracy: 0.9114520898265803
+```
+```
+from sklearn.metrics import classification_report
+print(classification_report(y_test, y_pred))
+```
+```OUTPUT
+              precision    recall  f1-score   support
+
+          in       0.91      0.87      0.89      2622
+       noise       0.84      0.77      0.81       988
+      normal       0.95      1.00      0.97      3933
+       other       0.94      0.79      0.86      1481
+         out       0.88      0.94      0.91      3489
+
+    accuracy                           0.91     12513
+   macro avg       0.90      0.87      0.89     12513
+weighted avg       0.91      0.91      0.91     12513
+```
 5개 라벨 예측의 전체 정확도는 91.1%였습니다.
 
+    1-2. 랜덤포레스트 피쳐 가공 모델
 0~5120Hz 범위의 소리를 10Hz 단위로 측정하고, Max값 또한 20개를 포함한 데이터이다보니 컬럼의 수가 너무 많았습니다. 따라서 중요한 데이터를 찾아낼 필요가 있었습니다.
 ```
 import matplotlib.pyplot as plt
@@ -65,9 +88,40 @@ plt.show()
 
 저음 영역대와 Max 값들의 중요도가 높음을 볼 수 있습니다.
 따라서, 0~790Hz와 Max값들만을 사용하여 최적화를 진행했습니다.
+```
+X_train_2 = pd.concat([X_train.iloc[:, :80], X_train.iloc[:, -20:]], axis=1)
+X_test_2 = pd.concat([X_test.iloc[:, :80], X_test.iloc[:, -20:]], axis=1)
 
+rf_classifier_2 = RandomForestClassifier(random_state=42)
+rf_classifier_2.fit(X_train_2, y_train)
+
+y_pred = rf_classifier_2.predict(X_test_2)
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
+```
+```Output
+Accuracy: 0.9303923919124111
+```
+```
+print(classification_report(y_test, y_pred))
+```
+```OUTPUT
+              precision    recall  f1-score   support
+
+          in       0.92      0.91      0.91      2622
+       noise       0.87      0.82      0.85       988
+      normal       0.97      1.00      0.98      3933
+       other       0.94      0.81      0.87      1481
+         out       0.91      0.95      0.93      3489
+
+    accuracy                           0.93     12513
+   macro avg       0.92      0.90      0.91     12513
+weighted avg       0.93      0.93      0.93     12513
+```
 전체 정확도 뿐만 아니라, 각각의 라벨들에 대한 정확도 모두 향상되었음을 확인할 수 있습니다.
 
+  2. XGBoost
+    2-1. XGBoost 피쳐 가공 모델
 예측 성능을 올리기 위해, Randomforest 모델 대신 XGBoost를 사용해봤습니다.
 
 오히려 정확도가 낮아졌는데, 이는 XGBoost가 많은 하이퍼 파라미터를 가지고 있고, 이에 민감한 알고리즘 때문입니다.
