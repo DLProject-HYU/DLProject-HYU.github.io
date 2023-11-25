@@ -23,7 +23,7 @@ Randomforest, xgboost
 # Evaluation & Analysis
 # 1. R을 이용한 Randomforest 코드
 ### 1-1. 불러올 함수
-
+```
 library('ggplot2') # visualization
 
 library('ggthemes') # visualization
@@ -34,45 +34,50 @@ library('dplyr') # data manipulation
 
 library('randomForest') # classification algorithm
 
-
+```
 ### 1-2 파일입력
-
+```
 train <- read.csv('./training.csv', stringsAsFactors = F)
 
 test <- read.csv('./test.csv', stringsAsFactors = F)
 
+```
 train파일에서 행별 구간 평균 계산 (100HZ 단위로 묶어 평균 계산)
-
+```
 train$mean0 <- rowMeans(train[,c('X0HZ' ,'X10HZ','X20HZ','X30HZ','X40HZ',
                                  'X50HZ','X60HZ','X70HZ','X80HZ','X90HZ')])
                                  
 train$mean1 <- rowMeans(train[,c('X100HZ' ,'X110HZ','X120HZ','X130HZ','X140HZ',
                                  'X150HZ' ,'X160HZ','X170HZ','X180HZ','X190HZ')])
+
 .
 .
 .
 
+```
 test파일도 마찬가지로 평균계산.
 
+```
 test$mean0 <- rowMeans(test[,c('X0HZ' ,'X10HZ','X20HZ','X30HZ','X40HZ',
                                  'X50HZ','X60HZ','X70HZ','X80HZ','X90HZ')])
                                  
 test$mean1 <- rowMeans(test[,c('X100HZ' ,'X110HZ','X120HZ','X130HZ','X140HZ',
                                  'X150HZ' ,'X160HZ','X170HZ','X180HZ','X190HZ')])
-.
-.
-.
 
+.
+.
+.
+```
 
 ### 1-3임의의 seed값 배정
-
+```
 set.seed(456)
-
+```
 
 ### 1-4 랜덤 포레스트 모델 형성 (시간 측정)
  
  코드 구동시 5분 34초정도 걸렸습니다.
-
+```
 system.time(rf_model <- randomForest(factor(leaktype) ~
                            #부가 정보
                            site + sid + ldate + lrate + llevel +
@@ -98,16 +103,16 @@ system.time(rf_model <- randomForest(factor(leaktype) ~
                           
                            data = train)
 
-                           
+  ```                         
 ### 1-5 모델 에러 표시
-
+```
 plot(rf_model, ylim=c(0,0.36))
 
 legend('topright', colnames(rf_model$err.rate), col=1:3, fill=1:3)
 
-
+```
 ### 1-6 중요도 분석
-
+```
 importance    <- importance(rf_model)
 
 varImportance <- data.frame(Variables = row.names(importance), 
@@ -120,13 +125,13 @@ rankImportance <- varImportance %>%
   
   mutate(Rank = paste0('#',dense_rank(desc(Importance))))
 
-
+```
 ### 1-7 test파일 예측
-
+```
 prediction <- predict(rf_model, test)
-
+```
 예측을 포함한 데이터 프레임 생성
-
+```
 solution <- data.frame(site = test$site,
                        sid = test$sid,
                        ldate = test$ldate,
@@ -143,18 +148,18 @@ false=count(solution,accurate==1)
 
 accuracy = true/(true+false)
 
-
+```
 ### 1-8 정답률
-
+```
 accuracy[2,2]
-
+```
 
 ### 1-9 파일 출력
-
+```
 write.csv(solution, file = 'leak_solution.csv', row.names = F)
 
 theme_few()
-
+```
 # 2.python을 이용한 Randomforest,xgboost 사용코드 
 ###   **2-1. XGBoost 피쳐 가공 모델**
 
