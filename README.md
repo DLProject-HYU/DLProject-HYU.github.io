@@ -30,6 +30,7 @@ Randomforest, xgboost를 사용했습니다.
    **1.1. 랜덤포레스트 기본 모델**
 
 실제 누수 2가지(in, out), 잘못된 누수 감지 2가지(noise, other), 정상음 1가지(normal)로 총 5개 라벨을 이용하여 Randomforst 모델을 활용하여 학습시켰습니다.
+
 ```
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
