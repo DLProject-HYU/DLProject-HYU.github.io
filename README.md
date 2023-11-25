@@ -101,7 +101,9 @@ y_pred = rf_classifier_2.predict(X_test_2)
 accuracy = accuracy_score(y_test, y_pred)
 print("Accuracy:", accuracy)
 ```
+```
 Accuracy: 0.9303923919124111
+```
 ```
 print(classification_report(y_test, y_pred))
 ```
