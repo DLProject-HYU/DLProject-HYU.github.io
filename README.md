@@ -26,7 +26,7 @@ Randomforest, xgboost를 사용했습니다.
 
 # Evaluation & Analysis
 실제 누수 2가지(in, out), 잘못된 누수 감지 2가지(noise, other), 정상음 1가지(normal)로 총 5개 라벨을 이용하여 Randomforst 모델을 활용하여 학습시켰습니다.
-'''
+```
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
@@ -44,7 +44,7 @@ rf_classifier.fit(X_train, y_train)
 y_pred = rf_classifier.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
 print("Accuracy:", accuracy)
-'''
+```
 5개 라벨 예측의 전체 정확도는 91.1%였습니다.
 
 0~5120Hz 범위의 소리를 10Hz 단위로 측정하고, Max값 또한 20개를 포함한 데이터이다보니 컬럼의 수가 너무 많았습니다. 따라서 중요한 데이터를 찾아낼 필요가 있었습니다.
