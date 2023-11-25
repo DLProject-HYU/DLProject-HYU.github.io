@@ -119,7 +119,7 @@ varImportance <- data.frame(Variables = row.names(importance),
                             
                             Importance = round(importance[ ,'MeanDecreaseGini'],2))
 
-각 변수 별 중요도 (우측 Environment 탭에서 확인 가능)
+각 변수 별 중요도
 
 rankImportance <- varImportance %>%
   
