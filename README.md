@@ -57,6 +57,7 @@ Accuracy: 0.9114520898265803
 from sklearn.metrics import classification_report
 print(classification_report(y_test, y_pred))
 ```
+```
               precision    recall  f1-score   support
 
           in       0.91      0.87      0.89      2622
