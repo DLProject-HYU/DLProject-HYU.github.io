@@ -48,6 +48,20 @@ print("Accuracy:", accuracy)
 5개 라벨 예측의 전체 정확도는 91.1%였습니다.
 
 0~5120Hz 범위의 소리를 10Hz 단위로 측정하고, Max값 또한 20개를 포함한 데이터이다보니 컬럼의 수가 너무 많았습니다. 따라서 중요한 데이터를 찾아낼 필요가 있었습니다.
+```
+import matplotlib.pyplot as plt
+features = X.columns
+
+plt.figure(figsize=(10, 6))
+plt.bar(features, rf_classifier.feature_importances_, color='skyblue')
+plt.xlabel('Features')
+plt.ylabel('Importance')
+plt.title('Feature Importances')
+plt.xticks(features)
+plt.show()
+```
+![image](https://github.com/DLProject-HYU/DLProject-HYU.github.io/assets/149747730/c3ec171e-97af-4861-b1a8-54f8fffd794e)
+
 
 저음 영역대와 Max 값들의 중요도가 높음을 볼 수 있습니다.
 따라서, 0~790Hz와 Max값들만을 사용하여 최적화를 진행했습니다.
