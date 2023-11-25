@@ -199,6 +199,7 @@ optimizer.maximize(init_points=5, n_iter=200)
 ```
 optimizer.max
 ```
+```
 {'target': 0.93230908104687,
  'params': {'alpha': 0.5893547220720841,
   'colsample_bytree': 1.0,
