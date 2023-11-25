@@ -45,14 +45,18 @@ train파일에서 행별 구간 평균 계산 (100HZ 단위로 묶어 평균 계
 
 train$mean0 <- rowMeans(train[,c('X0HZ' ,'X10HZ','X20HZ','X30HZ','X40HZ',
                                  'X50HZ','X60HZ','X70HZ','X80HZ','X90HZ')])
+                                 
 train$mean1 <- rowMeans(train[,c('X100HZ' ,'X110HZ','X120HZ','X130HZ','X140HZ',
                                  'X150HZ' ,'X160HZ','X170HZ','X180HZ','X190HZ')])
 .
 .
 .
+
 test파일도 마찬가지로 평균계산.
+
 test$mean0 <- rowMeans(test[,c('X0HZ' ,'X10HZ','X20HZ','X30HZ','X40HZ',
                                  'X50HZ','X60HZ','X70HZ','X80HZ','X90HZ')])
+                                 
 test$mean1 <- rowMeans(test[,c('X100HZ' ,'X110HZ','X120HZ','X130HZ','X140HZ',
                                  'X150HZ' ,'X160HZ','X170HZ','X180HZ','X190HZ')])
 .
