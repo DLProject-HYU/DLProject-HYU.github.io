@@ -21,7 +21,7 @@ test와 train셋으로 분리함. Test,Train은 xgboost를 활용한 코드에 �
 # Methodology
 Randomforest, xgboost
 # Evaluation & Analysis
-1. R을 이용한 Randomforest 코드
+# 1. R을 이용한 Randomforest 코드
 1-1. 불러올 함수
 library('ggplot2') # visualization
 library('ggthemes') # visualization
@@ -56,7 +56,7 @@ set.seed(456)
 
 
 1-4 랜덤 포레스트 모델 형성 (시간 측정)
-# 코드 구동시 5분 34초정도 걸렸습니다.
+ 코드 구동시 5분 34초정도 걸렸습니다.
 system.time(rf_model <- randomForest(factor(leaktype) ~
                            #부가 정보
                            site + sid + ldate + lrate + llevel +
@@ -93,7 +93,7 @@ importance    <- importance(rf_model)
 varImportance <- data.frame(Variables = row.names(importance), 
                             Importance = round(importance[ ,'MeanDecreaseGini'],2))
 
-# 각 변수 별 중요도 (우측 Environment 탭에서 확인 가능)
+각 변수 별 중요도 (우측 Environment 탭에서 확인 가능)
 rankImportance <- varImportance %>%
   mutate(Rank = paste0('#',dense_rank(desc(Importance))))
 
@@ -101,7 +101,7 @@ rankImportance <- varImportance %>%
 1-7 test파일 예측
 prediction <- predict(rf_model, test)
 
-# 예측을 포함한 데이터 프레임 생성
+예측을 포함한 데이터 프레임 생성
 solution <- data.frame(site = test$site,
                        sid = test$sid,
                        ldate = test$ldate,
@@ -125,7 +125,7 @@ write.csv(solution, file = 'leak_solution.csv', row.names = F)
 
 theme_few()
 
-2.python을 이용한 Randomforest,xgboost 사용코드 
+# 2.python을 이용한 Randomforest,xgboost 사용코드 
 # Related Work
 
 # Conclusion: Discussion
