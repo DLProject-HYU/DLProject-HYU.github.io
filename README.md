@@ -49,7 +49,9 @@ y_pred = rf_classifier.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
 print("Accuracy:", accuracy)
 ```
+```
 Accuracy: 0.9114520898265803
+```
 ```
 from sklearn.metrics import classification_report
 print(classification_report(y_test, y_pred))
@@ -140,7 +142,9 @@ accuracy = accuracy_score(y_test_encoded, y_pred)
 
 print("Accuracy:", accuracy)
 ```
+```
 Accuracy: 0.8955486294253976
+```
 
 오히려 정확도가 낮아졌는데, 이는 XGBoost가 많은 하이퍼파라미터를 가지고 있고, 이에 민감한 알고리즘 때문입니다.
 
@@ -223,8 +227,9 @@ accuracy = accuracy_score(y_test_encoded, y_pred)
 
 print("Accuracy:", accuracy)
 ```
+```
 Accuracy: 0.9446175976983937
-
+```
 지금까지의 모델들의 정확도를 비교해보면
 ```
 랜덤 포레스트 기본 모델 : Accuracy: 0.9114520898265803
