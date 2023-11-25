@@ -68,7 +68,7 @@ print(classification_report(y_test, y_pred))
     accuracy                           0.91     12513
    macro avg       0.90      0.87      0.89     12513
 weighted avg       0.91      0.91      0.91     12513
-
+```
 5개 라벨 예측의 전체 정확도는 91.1%였습니다.
 
    **1-2. 랜덤포레스트 피쳐 가공 모델**
