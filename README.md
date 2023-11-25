@@ -188,6 +188,7 @@ optimizer = BayesianOptimization(f=xgb_eval, pbounds=pbounds, random_state=42)
 
 optimizer.maximize(init_points=5, n_iter=200)
 ```
+```
 optimizer.max
 ```
 {'target': 0.93230908104687,
