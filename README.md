@@ -109,6 +109,7 @@ Accuracy: 0.9303923919124111
 ```
 print(classification_report(y_test, y_pred))
 ```
+```
               precision    recall  f1-score   support
 
           in       0.92      0.91      0.91      2622
@@ -120,6 +121,7 @@ print(classification_report(y_test, y_pred))
     accuracy                           0.93     12513
    macro avg       0.92      0.90      0.91     12513
 weighted avg       0.93      0.93      0.93     12513
+```
 
 전체 정확도 뿐만 아니라, 각각의 라벨들에 대한 정확도 모두 향상되었음을 확인할 수 있습니다.
 
