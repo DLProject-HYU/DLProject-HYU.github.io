@@ -17,8 +17,9 @@
 # Datasets
 장소에 따른 상수관로 누수음성 데이터셋(HZ)  
 옥내누수, 옥외누수, 기계/전기음, 환경음, 정상음 포함
+test와 train셋으로 분리함. Test,Train은 xgboost를 활용한 코드에 쓰인 데이터 셋, test, training은 순수 randomforest을 이용한 코드에 사용되었습니다.
 # Methodology
-Randomforest, xgboost, lightbm, 바예시안 최적화 기법 네 가지가 현재 후보군
+Randomforest, xgboost
 # Evaluation & Analysis
 
 # Related Work
