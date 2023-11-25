@@ -41,7 +41,7 @@ train <- read.csv('./training.csv', stringsAsFactors = F)
 
 test <- read.csv('./test.csv', stringsAsFactors = F)
 
-#train파일에서 행별 구간 평균 계산 (100HZ 단위로 묶어 평균 계산)
+train파일에서 행별 구간 평균 계산 (100HZ 단위로 묶어 평균 계산)
 
 train$mean0 <- rowMeans(train[,c('X0HZ' ,'X10HZ','X20HZ','X30HZ','X40HZ',
                                  'X50HZ','X60HZ','X70HZ','X80HZ','X90HZ')])
