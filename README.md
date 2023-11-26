@@ -161,7 +161,7 @@ accuracy[2,2]
 write.csv(solution, file = 'leak_solution.csv', row.names = F)
 theme_few()
 ```
-####1-2-2. Python을 이용하여 중요한 피쳐를 골라낸 모델
+#### 1-2-2. Python을 이용하여 중요한 피쳐를 골라낸 모델
 0~5120Hz 범위의 소리를 10Hz 단위로 측정하고, Max값 또한 20개를 포함한 데이터이다보니 컬럼의 수가 너무 많았습니다. 따라서 중요한 데이터를 찾아낼 필요가 있었습니다.
 ```
 import matplotlib.pyplot as plt
