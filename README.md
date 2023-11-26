@@ -122,36 +122,24 @@ system.time(rf_model <- randomForest(factor(leaktype) ~
                            MAX15 + MAX16 + MAX17 + MAX18 + MAX19 ,
                           
                            data = train)
-
-  ```                         
-### 1-5 모델 에러 표시
-
+                        
+#모델 에러 표시
 plot(rf_model, ylim=c(0,0.36))
-
 legend('topright', colnames(rf_model$err.rate), col=1:3, fill=1:3)
 
-```
-### 1-6 중요도 분석
-```
+#중요도 분석
 importance    <- importance(rf_model)
-
-varImportance <- data.frame(Variables = row.names(importance), 
-                            
+varImportance <- data.frame(Variables = row.names(importance),                            
                             Importance = round(importance[ ,'MeanDecreaseGini'],2))
 
-각 변수 별 중요도
-
-rankImportance <- varImportance %>%
-  
+#각 변수 별 중요도
+rankImportance <- varImportance %>%  
   mutate(Rank = paste0('#',dense_rank(desc(Importance))))
 
-```
-### 1-7 test파일 예측
-```
+#test파일 예측
 prediction <- predict(rf_model, test)
-```
-예측을 포함한 데이터 프레임 생성
-```
+
+#예측을 포함한 데이터 프레임 생성
 solution <- data.frame(site = test$site,
                        sid = test$sid,
                        ldate = test$ldate,
@@ -163,21 +151,14 @@ solution <- data.frame(site = test$site,
 
 
 true=count(solution,accurate==0)
-
 false=count(solution,accurate==1)
-
 accuracy = true/(true+false)
 
-```
-### 1-8 정답률
-```
+#정답률
 accuracy[2,2]
-```
 
-### 1-9 파일 출력
-```
+#파일 출력
 write.csv(solution, file = 'leak_solution.csv', row.names = F)
-
 theme_few()
 ```
 #### 1-2-2. Python을 이용하여 중요한 피쳐를 골라낸 모델
