@@ -21,63 +21,83 @@ test와 train셋으로 분리함. Test,Train은 xgboost를 활용한 코드에 �
 # Methodology
 Randomforest, xgboost
 # Evaluation & Analysis
-# 1. R을 이용한 Randomforest 코드
-### 1-1. 불러올 함수
+##  **1. 랜덤 포레스트**
+###   **1.1. 랜덤포레스트 기본 모델**
+실제 누수 2가지(in, out), 잘못된 누수 감지 2가지(noise, other), 정상음 1가지(normal)로 총 5개 라벨을 이용하여 Randomforst 모델을 활용하여 학습시켰습니다.
+```
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+X = train.drop('leaktype', axis=1)
+y = train['leaktype']
+
+# 2. 데이터 분할 (훈련 데이터와 테스트 데이터로 분할)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# 3. 모델 학습
+rf_classifier = RandomForestClassifier(random_state=42)
+rf_classifier.fit(X_train, y_train)
+
+# 4. 모델 평가
+y_pred = rf_classifier.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
+```
+```
+Accuracy: 0.9114520898265803
+```
+```
+from sklearn.metrics import classification_report
+print(classification_report(y_test, y_pred))
+```
+```
+              precision    recall  f1-score   support
+
+          in       0.91      0.87      0.89      2622
+       noise       0.84      0.77      0.81       988
+      normal       0.95      1.00      0.97      3933
+       other       0.94      0.79      0.86      1481
+         out       0.88      0.94      0.91      3489
+
+    accuracy                           0.91     12513
+   macro avg       0.90      0.87      0.89     12513
+weighted avg       0.91      0.91      0.91     12513
+```
+5개 라벨 예측의 전체 정확도는 91.1%였습니다.
+
+ ###  **1-2. 랜덤포레스트 피쳐 가공 모델**
+#### 1-2-1. R을 이용한 피쳐 평균치 모델
+피쳐의 갯수를 줄이고자, Hz를 일정구간마다 나누어 평균을 내주었고, 이를 피쳐로 채택하여 정확도의 변화를 확인하고자 했습니다.
 ```
 library('ggplot2') # visualization
-
 library('ggthemes') # visualization
-
 library('scales') # visualization
-
 library('dplyr') # data manipulation
-
 library('randomForest') # classification algorithm
 
-```
-### 1-2 파일입력
-```
+#사용할 데이터 불러오기
 train <- read.csv('./training.csv', stringsAsFactors = F)
-
 test <- read.csv('./test.csv', stringsAsFactors = F)
 
-```
-train파일에서 행별 구간 평균 계산 (100HZ 단위로 묶어 평균 계산)
-```
+
+#train파일에서 행별 구간 평균 계산 (100HZ 단위로 묶어 평균 계산)
 train$mean0 <- rowMeans(train[,c('X0HZ' ,'X10HZ','X20HZ','X30HZ','X40HZ',
-                                 'X50HZ','X60HZ','X70HZ','X80HZ','X90HZ')])
-                                 
+                                 'X50HZ','X60HZ','X70HZ','X80HZ','X90HZ')])                            
 train$mean1 <- rowMeans(train[,c('X100HZ' ,'X110HZ','X120HZ','X130HZ','X140HZ',
                                  'X150HZ' ,'X160HZ','X170HZ','X180HZ','X190HZ')])
 
-.
-.
-.
 
-```
-test파일도 마찬가지로 평균계산.
-
-```
+#test파일도 마찬가지로 평균계산.
 test$mean0 <- rowMeans(test[,c('X0HZ' ,'X10HZ','X20HZ','X30HZ','X40HZ',
-                                 'X50HZ','X60HZ','X70HZ','X80HZ','X90HZ')])
-                                 
+                                 'X50HZ','X60HZ','X70HZ','X80HZ','X90HZ')])                                 
 test$mean1 <- rowMeans(test[,c('X100HZ' ,'X110HZ','X120HZ','X130HZ','X140HZ',
                                  'X150HZ' ,'X160HZ','X170HZ','X180HZ','X190HZ')])
 
-.
-.
-.
-```
 
-### 1-3임의의 seed값 배정
-```
+#임의의 seed값 배정
 set.seed(456)
-```
 
-### 1-4 랜덤 포레스트 모델 형성 (시간 측정)
- 
- 코드 구동시 5분 34초정도 걸렸습니다.
-```
+#랜덤 포레스트 모델 형성
 system.time(rf_model <- randomForest(factor(leaktype) ~
                            #부가 정보
                            site + sid + ldate + lrate + llevel +
@@ -105,7 +125,7 @@ system.time(rf_model <- randomForest(factor(leaktype) ~
 
   ```                         
 ### 1-5 모델 에러 표시
-```
+
 plot(rf_model, ylim=c(0,0.36))
 
 legend('topright', colnames(rf_model$err.rate), col=1:3, fill=1:3)
@@ -160,6 +180,58 @@ write.csv(solution, file = 'leak_solution.csv', row.names = F)
 
 theme_few()
 ```
+#### 1-2-2. Python을 이용하여 중요한 피쳐를 골라낸 모델
+0~5120Hz 범위의 소리를 10Hz 단위로 측정하고, Max값 또한 20개를 포함한 데이터이다보니 컬럼의 수가 너무 많았습니다. 따라서 중요한 데이터를 찾아낼 필요가 있었습니다.
+```
+import matplotlib.pyplot as plt
+features = X.columns
+
+plt.figure(figsize=(10, 6))
+plt.bar(features, rf_classifier.feature_importances_, color='skyblue')
+plt.xlabel('Features')
+plt.ylabel('Importance')
+plt.title('Feature Importances')
+plt.xticks(features)
+plt.show()
+```
+![image](https://github.com/DLProject-HYU/DLProject-HYU.github.io/assets/149747730/c3ec171e-97af-4861-b1a8-54f8fffd794e)
+
+
+저음 영역대와 Max 값들의 중요도가 높음을 볼 수 있습니다.
+따라서, 0~790Hz와 Max값들만을 사용하여 최적화를 진행했습니다.
+```
+X_train_2 = pd.concat([X_train.iloc[:, :80], X_train.iloc[:, -20:]], axis=1)
+X_test_2 = pd.concat([X_test.iloc[:, :80], X_test.iloc[:, -20:]], axis=1)
+
+rf_classifier_2 = RandomForestClassifier(random_state=42)
+rf_classifier_2.fit(X_train_2, y_train)
+
+y_pred = rf_classifier_2.predict(X_test_2)
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
+```
+```
+Accuracy: 0.9303923919124111
+```
+```
+print(classification_report(y_test, y_pred))
+```
+```
+              precision    recall  f1-score   support
+
+          in       0.92      0.91      0.91      2622
+       noise       0.87      0.82      0.85       988
+      normal       0.97      1.00      0.98      3933
+       other       0.94      0.81      0.87      1481
+         out       0.91      0.95      0.93      3489
+
+    accuracy                           0.93     12513
+   macro avg       0.92      0.90      0.91     12513
+weighted avg       0.93      0.93      0.93     12513
+```
+
+전체 정확도 뿐만 아니라, 각각의 라벨들에 대한 정확도 모두 향상되었음을 확인할 수 있습니다.
+
 # 2.python을 이용한 Randomforest,xgboost 사용코드 
 ###   **2-1. XGBoost 피쳐 가공 모델**
 
