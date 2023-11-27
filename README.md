@@ -32,26 +32,27 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 X = train.drop('leaktype', axis=1)
 y = train['leaktype']
-
+```
 X = train.drop('leaktype', axis=1): 데이터프레임 train에서 'leaktype' 열을 제외한 모든 열을 특성(X)으로 사용합니다.
 y = train['leaktype']: 'leaktype' 열을 라벨(y)로 사용합니다.
-
+```
 # 2. 데이터 분할 (훈련 데이터와 테스트 데이터로 분할)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
+```
 train_test_split 함수를 사용하여 데이터를 훈련 데이터(X_train, y_train)와 테스트 데이터(X_test, y_test)로 나눕니다. 이때, 테스트 데이터의 비율은 20%로 지정되어 있습니다.
-
+```
 # 3. 모델 학습
 rf_classifier = RandomForestClassifier(random_state=42)
 rf_classifier.fit(X_train, y_train)
-
+```
 RandomForestClassifier를 사용하여 랜덤 포레스트 분류기 모델을 생성합니다.
 fit 메서드를 사용하여 훈련 데이터를 사용하여 모델을 학습시킵니다.
-
+```
 # 4. 모델 평가
 y_pred = rf_classifier.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
 print("Accuracy:", accuracy)
+```
 ```
 ```
 Accuracy: 0.9114520898265803
