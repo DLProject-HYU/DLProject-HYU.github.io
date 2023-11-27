@@ -18,6 +18,7 @@
 장소에 따른 상수관로 누수음성 데이터셋(HZ)  
 옥내누수, 옥외누수, 기계/전기음, 환경음, 정상음 포함
 test와 train셋으로 분리함. Test,Train파일은 xgboost를 활용한 코드에 쓰인 데이터 셋에 사용되었고, 
+
 test, training파일은 순수 randomforest을 이용한 코드에 사용되었습니다.
 # Methodology
 Randomforest, xgboost
@@ -269,7 +270,7 @@ print("Accuracy:", accuracy)
 Accuracy: 0.8955486294253976
 ```
 
-오히려 정확도가 낮아졌는데, 이는 XGBoost가 많은 하이퍼파라미터를 가지고 있고, 이에 민감한 알고리즘 때문입니다.
+오히려 정확도가 낮아졌는데, 이는 XGBoost가 많은 하이퍼파라미터를 가지고 있고, 이에 민감한 알고리즘이기 때문입니다.
 
 XGBoost 모델 적용: XGBoost 라이브러리에서 XGBClassifier를 사용하여 모델을 생성합니다.
 
