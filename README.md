@@ -379,7 +379,7 @@ XGBoost 하이퍼파라미터 최적화 전 (피쳐 가공) : Accuracy: 0.895548
 XGBoost 하이퍼파라미터 최적화 후 (피쳐 가공) : Accuracy: 0.9446175976983937
 ```
 베이지언 최적화를 통해 하이퍼파라미터를 최적화 해주었을 경우 랜덤 포레스트 모델보다 높은 정확도를 보임을 확인했습니다.
-### 3. 성능 비교
+## 3. 성능 비교
 AIHub의 상관누수 데이터에서는 별도의 Test Data를 제공하기 때문에, 랜덤 포레스트 기본모델, 랜덤포레스트 피쳐 가공 모델, XGBoost 피쳐 가공 모델, XGBoost 피쳐 가공 + 하이퍼파라미터 튜닝 모델 4가지의 성능을 비교해봤습니다.
 
 과정 설명:
@@ -392,7 +392,7 @@ AIHub의 상관누수 데이터에서는 별도의 Test Data를 제공하기 때
 ```
 결과 해석:
 
-#### 3-1. 랜덤 포레스트 기본 모델
+### 3-1. 랜덤 포레스트 기본 모델
 ```
 out_test = pd.read_csv('Data/Test/1.옥외누수(out-test).csv')
 in_test = pd.read_csv('Data/Test/2.옥내누수(in-test).csv')
@@ -418,7 +418,7 @@ print("Accuracy:", accuracy)
 ```
 Accuracy: 0.9043478260869565
 ```
-#### 3-2. 랜덤 포레스트 피쳐 가공
+### 3-2. 랜덤 포레스트 피쳐 가공
 ```
 x_test_f = pd.concat([x_test_f.iloc[:, :80], x_test_f.iloc[:, -20:]], axis=1)
 y_pred = rf_classifier_2.predict(x_test_f)
@@ -428,7 +428,7 @@ print("Accuracy:", accuracy)
 ```
 Accuracy: 0.9273657289002557
 ```
-#### 3-3. XGBoost 피쳐 가공 모델
+### 3-3. XGBoost 피쳐 가공 모델
 ```
 print(classification_report(y_test_f_encoded, y_pred))
 ```
@@ -463,7 +463,7 @@ print("Accuracy:", accuracy)
 ```
 Accuracy: 0.8928388746803069
 ```
-#### 3-4. XGBoost 피쳐 가공 및 하이퍼파라미터 최적화 모델
+### 3-4. XGBoost 피쳐 가공 및 하이퍼파라미터 최적화 모델
 ```
 print(classification_report(y_test_f, y_pred))
 ```
