@@ -49,7 +49,7 @@ RandomForestClassifier를 사용하여 랜덤 포레스트 분류기 모델을 �
 fit 메서드를 사용하여 훈련 데이터를 사용하여 모델을 학습시킵니다.
 ```
 # 4. 모델 평가
-y_pred = rf_classifier.predict(X_test)
+y_pred = rf_classifier.predict(X_test) 
 accuracy = accuracy_score(y_test, y_pred)
 print("Accuracy:", accuracy)
 ```
