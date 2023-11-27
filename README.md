@@ -182,9 +182,7 @@ theme_few()
 ```
 ![image](https://github.com/DLProject-HYU/DLProject-HYU.github.io/assets/149747730/5e52bcc0-9093-4775-a322-072507eaecad)
 ```
-accurate == 0         n
-           NaN 0.1317136
-           0.5 0.8682864
+Accuracy: 0.8682864
 ```
 
 #### 1-2-2. Python을 이용하여 중요한 피쳐를 골라낸 모델
