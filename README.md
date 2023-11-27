@@ -179,6 +179,13 @@ accuracy[2,2]
 write.csv(solution, file = 'leak_solution.csv', row.names = F)
 theme_few()
 ```
+![image](https://github.com/DLProject-HYU/DLProject-HYU.github.io/assets/149747730/5e52bcc0-9093-4775-a322-072507eaecad)
+```
+accurate == 0         n
+           NaN 0.1317136
+           0.5 0.8682864
+```
+
 #### 1-2-2. Python을 이용하여 중요한 피쳐를 골라낸 모델
 0~5120Hz 범위의 소리를 10Hz 단위로 측정하고, Max값 또한 20개를 포함한 데이터이다보니 컬럼의 수가 너무 많았습니다. 따라서 중요한 데이터를 찾아낼 필요가 있었습니다.
 ```
