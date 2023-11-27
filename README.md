@@ -22,6 +22,8 @@ test와 train셋으로 분리함. Test,Train은 xgboost를 활용한 코드에 �
 Randomforest, xgboost
 # Evaluation & Analysis
 ##  **1. 랜덤 포레스트**
+랜덤 포레스트 알고리즘에는 세 개의 주요 하이퍼파라미터가 있습니다. 훈련 전에 이러한 하이퍼파라미터를 설정해야 합니다. 여기에는 노드 크기, 트리의 수, 샘플링된 특성의 수가 포함됩니다. 여기에서부터 랜덤 포레스트 분류자를 사용하여 회귀 또는 분류 문제를 해결할 수 있습니다.
+랜덤 포레스트 알고리즘은 다수의 의사결정 트리로 구성되며 앙상블의 각 트리는 복원 추출 방식으로 훈련 세트에서 추출된 데이터 샘플(이를 부트스트랩 샘플이라고 부름)로 구성됩니다. 이 훈련 샘플 중에서 1/3은 테스트 데이터로 떼어 놓습니다. 그 다음, 무작위성의 또 다른 인스턴스는 특성 배깅을 통해 주입됩니다. 이를 통해 데이터 세트에 다양성을 추가하고 의사결정 트리 간의 상관관계를 줄입니다. 문제의 유형에 따라 예측에 대한 결정이 달라집니다. 회귀 작업의 경우 개별 의사결정 트리는 평균을 구하며, 분류 작업의 경우 다수결 보트(majority vote), 즉 가장 빈번한 범주적 변수에 따라 예측된 클래스를 내놓습니다. 마지막으로, oob 샘플이 교차 검증을 위해 사용되고 예측이 완료됩니다.
 ###   **1.1. 랜덤포레스트 기본 모델**
 실제 누수 2가지(in, out), 잘못된 누수 감지 2가지(noise, other), 정상음 1가지(normal)로 총 5개 라벨을 이용하여 Randomforst 모델을 활용하여 학습시켰습니다.
 ```
@@ -31,12 +33,20 @@ from sklearn.metrics import accuracy_score
 X = train.drop('leaktype', axis=1)
 y = train['leaktype']
 
+X = train.drop('leaktype', axis=1): 데이터프레임 train에서 'leaktype' 열을 제외한 모든 열을 특성(X)으로 사용합니다.
+y = train['leaktype']: 'leaktype' 열을 라벨(y)로 사용합니다.
+
 # 2. 데이터 분할 (훈련 데이터와 테스트 데이터로 분할)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+train_test_split 함수를 사용하여 데이터를 훈련 데이터(X_train, y_train)와 테스트 데이터(X_test, y_test)로 나눕니다. 이때, 테스트 데이터의 비율은 20%로 지정되어 있습니다.
 
 # 3. 모델 학습
 rf_classifier = RandomForestClassifier(random_state=42)
 rf_classifier.fit(X_train, y_train)
+
+RandomForestClassifier를 사용하여 랜덤 포레스트 분류기 모델을 생성합니다.
+fit 메서드를 사용하여 훈련 데이터를 사용하여 모델을 학습시킵니다.
 
 # 4. 모델 평가
 y_pred = rf_classifier.predict(X_test)
@@ -65,6 +75,14 @@ weighted avg       0.91      0.91      0.91     12513
 ```
 5개 라벨 예측의 전체 정확도는 91.1%였습니다.
 
+테스트 데이터를 사용하여 모델을 평가합니다.
+모델의 예측값(y_pred)과 실제 라벨(y_test)을 비교하여 정확도를 계산합니다.
+classification_report 함수를 사용하여 라벨별 정밀도, 재현율, F1 점수를 계산하고 출력합니다.
+
+전체 정확도(Accuracy)는 91.1%로 나타났습니다.
+각 라벨에 대한 세부적인 성능 지표(Precision, Recall, F1-score)도 출력되어 있습니다.
+예를 들어, 'in' 라벨의 경우 정밀도(Precision)는 0.91, 재현율(Recall)은 0.87, F1-score는 0.89입니다.
+전체적으로는 macro avg와 weighted avg를 통해 각 라벨의 성능을 종합적으로 확인할 수 있습니다.
  ###  **1-2. 랜덤포레스트 피쳐 가공 모델**
 #### 1-2-1. R을 이용한 피쳐 평균치 모델
 피쳐의 갯수를 줄이고자, Hz를 일정구간마다 나누어 평균을 내주었고, 이를 피쳐로 채택하여 정확도의 변화를 확인하고자 했습니다.
@@ -212,6 +230,12 @@ weighted avg       0.93      0.93      0.93     12513
 ```
 
 전체 정확도 뿐만 아니라, 각각의 라벨들에 대한 정확도 모두 향상되었음을 확인할 수 있습니다.
+
+이 코드와 방금 전의 코드 사이의 차이점은 다음과 같습니다:
+
+피쳐 엔지니어링:
+이 코드에서는 주어진 Hz 범위에 대해 각 행별로 평균을 계산하여 새로운 피쳐를 생성했습니다.
+이것은 원래 데이터의 다양한 Hz 범위에서 추출한 피쳐를 특정 구간으로 줄이는 효과가 있습니다.
 
 # 2.python을 이용한 Randomforest,xgboost 사용코드 
 ###   **2-1. XGBoost 피쳐 가공 모델**
