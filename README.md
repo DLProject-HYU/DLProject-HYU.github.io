@@ -373,6 +373,7 @@ XGBoost 하이퍼파라미터 최적화 후 (피쳐 가공) : Accuracy: 0.944617
 ```
 베이지언 최적화를 통해 하이퍼파라미터를 최적화 해주었을 경우 랜덤 포레스트 모델보다 높은 정확도를 보임을 확인했습니다.
 
+#### 3. 성능 비교
 AIHub의 상관누수 데이터에서는 별도의 Test Data를 제공하기 때문에, 랜덤 포레스트 기본모델, 랜덤포레스트 피쳐 가공 모델, XGBoost 피쳐 가공 모델, XGBoost 피쳐 가공 + 하이퍼파라미터 튜닝 모델 4가지의 성능을 비교해봤습니다.
 
 과정 설명:
@@ -384,6 +385,103 @@ AIHub의 상관누수 데이터에서는 별도의 Test Data를 제공하기 때
 예측 및 정확도 평가: 테스트 데이터를 사용하여 최종 모델을 평가하고 정확도를 계산합니다.
 ```
 결과 해석:
+
+#### 3-1. 랜덤 포레스트 기본 모델
+```
+out_test = pd.read_csv('Data/Test/1.옥외누수(out-test).csv')
+in_test = pd.read_csv('Data/Test/2.옥내누수(in-test).csv')
+noise_test = pd.read_csv('Data/Test/3.기계.전기음(noise-test).csv')
+other_test = pd.read_csv('Data/Test/4.환경음(other-test).csv')
+normal_test = pd.read_csv('Data/Test/5.정상음(normal-test).csv')
+
+out_test.drop(['site', 'sid', 'ldate', 'lrate', 'llevel'], axis=1, inplace=True)
+in_test.drop(['site', 'sid', 'ldate', 'lrate', 'llevel'], axis=1, inplace=True)
+noise_test.drop(['site', 'sid', 'ldate', 'lrate', 'llevel'], axis=1, inplace=True)
+other_test.drop(['site', 'sid', 'ldate', 'lrate', 'llevel'], axis=1, inplace=True)
+normal_test.drop(['site', 'sid', 'ldate', 'lrate', 'llevel'], axis=1, inplace=True)
+
+test_final = pd.concat([out_test, in_test, noise_test, other_test, normal_test]).reset_index(drop=True)
+x_test_f = test_final.drop('leaktype', axis=1)
+
+y_test_f = test_final['leaktype']
+y_test_f_encoded = label_encoder.transform(y_test_f.values.ravel())
+y_pred = rf_classifier.predict(x_test_f)
+accuracy = accuracy_score(y_test_f, y_pred)
+print("Accuracy:", accuracy)
+```
+```
+Accuracy: 0.9043478260869565
+```
+#### 3-2. 랜덤 포레스트 피쳐 가공
+```
+x_test_f = pd.concat([x_test_f.iloc[:, :80], x_test_f.iloc[:, -20:]], axis=1)
+y_pred = rf_classifier_2.predict(x_test_f)
+accuracy = accuracy_score(y_test_f, y_pred)
+print("Accuracy:", accuracy)
+```
+```
+Accuracy: 0.9273657289002557
+```
+#### 3-3. XGBoost 피쳐 가공 모델
+```
+print(classification_report(y_test_f_encoded, y_pred))
+```
+```
+              precision    recall  f1-score   support
+
+           0       0.91      0.92      0.92      1659
+           1       0.90      0.84      0.87       629
+           2       1.00      1.00      1.00      2462
+           3       0.93      0.85      0.89       878
+           4       0.92      0.96      0.94      2192
+
+    accuracy                           0.94      7820
+   macro avg       0.93      0.91      0.92      7820
+weighted avg       0.94      0.94      0.94      7820
+```
+```
+label_mapping = {label: index for index, label in enumerate(label_encoder.classes_)}
+print(label_mapping)
+```
+```
+{'in': 0, 'noise': 1, 'normal': 2, 'other': 3, 'out': 4}
+```
+```
+xgb_classifier_base = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss', random_state=42)
+xgb_classifier_base.fit(X_train_2, y_train_encoded)
+
+y_pred = xgb_classifier_base.predict(x_test_f)
+accuracy = accuracy_score(y_test_f_encoded, y_pred)
+print("Accuracy:", accuracy)
+```
+```
+Accuracy: 0.8928388746803069
+```
+#### 3-4. XGBoost 피쳐 가공 및 하이퍼파라미터 최적화 모델
+```
+print(classification_report(y_test_f, y_pred))
+```
+```
+              precision    recall  f1-score   support
+
+          in       0.92      0.90      0.91      1659
+       noise       0.89      0.80      0.84       629
+      normal       0.97      1.00      0.98      2462
+       other       0.93      0.79      0.86       878
+         out       0.90      0.96      0.93      2192
+
+    accuracy                           0.93      7820
+   macro avg       0.92      0.89      0.90      7820
+weighted avg       0.93      0.93      0.93      7820
+```
+```
+y_pred = xgb_classifier.predict(x_test_f)
+accuracy = accuracy_score(y_test_f_encoded, y_pred)
+print("Accuracy:", accuracy)
+```
+```
+Accuracy: 0.9425831202046036
+```
 
 최적 하이퍼파라미터:
 ```
