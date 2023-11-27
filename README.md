@@ -54,7 +54,6 @@ accuracy = accuracy_score(y_test, y_pred)
 print("Accuracy:", accuracy)
 ```
 ```
-```
 Accuracy: 0.9114520898265803
 ```
 ```
