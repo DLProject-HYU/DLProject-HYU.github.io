@@ -161,6 +161,13 @@ accuracy[2,2]
 write.csv(solution, file = 'leak_solution.csv', row.names = F)
 theme_few()
 ```
+![image](https://github.com/DLProject-HYU/DLProject-HYU.github.io/assets/149747730/129d7d43-7560-484d-917a-238314cfdaaa)
+```
+accurate == 0         n
+           NaN 0.1317136
+           0.5 0.8682864
+```
+오히려 정답률이 낮아지는 좋지 못한 결과를 보였습니다.
 #### 1-2-2. Python을 이용하여 중요한 피쳐를 골라낸 모델
 0~5120Hz 범위의 소리를 10Hz 단위로 측정하고, Max값 또한 20개를 포함한 데이터이다보니 컬럼의 수가 너무 많았습니다. 따라서 중요한 데이터를 찾아낼 필요가 있었습니다.
 ```
@@ -328,14 +335,112 @@ Accuracy: 0.9446175976983937
 지금까지의 모델들의 정확도를 비교해보면
 ```
 랜덤 포레스트 기본 모델 : Accuracy: 0.9114520898265803
+랜덤 포레스트 평균 피쳐 모델 : Accuracy : 0.8682864
 랜덤 포레스트 피쳐 가공 : Accuracy: 0.9303923919124111
 XGBoost 하이퍼파라미터 최적화 전 (피쳐 가공) : Accuracy: 0.8955486294253976
 XGBoost 하이퍼파라미터 최적화 후 (피쳐 가공) : Accuracy: 0.9446175976983937
 ```
 베이지언 최적화를 통해 하이퍼파라미터를 최적화 해주었을 경우 랜덤 포레스트 모델보다 높은 정확도를 보임을 확인했습니다.
 
+### 3. 성능 비교를 위한 Test Data 이용
 AIHub의 상관누수 데이터에서는 별도의 Test Data를 제공하기 때문에, 랜덤 포레스트 기본모델, 랜덤포레스트 피쳐 가공 모델, XGBoost 피쳐 가공 모델, XGBoost 피쳐 가공 + 하이퍼파라미터 튜닝 모델 4가지의 성능을 비교해봤습니다.
+#### 3-1. 랜덤 포레스트 기본 모델
+```
+out_test = pd.read_csv('Data/Test/1.옥외누수(out-test).csv')
+in_test = pd.read_csv('Data/Test/2.옥내누수(in-test).csv')
+noise_test = pd.read_csv('Data/Test/3.기계.전기음(noise-test).csv')
+other_test = pd.read_csv('Data/Test/4.환경음(other-test).csv')
+normal_test = pd.read_csv('Data/Test/5.정상음(normal-test).csv')
 
+out_test.drop(['site', 'sid', 'ldate', 'lrate', 'llevel'], axis=1, inplace=True)
+in_test.drop(['site', 'sid', 'ldate', 'lrate', 'llevel'], axis=1, inplace=True)
+noise_test.drop(['site', 'sid', 'ldate', 'lrate', 'llevel'], axis=1, inplace=True)
+other_test.drop(['site', 'sid', 'ldate', 'lrate', 'llevel'], axis=1, inplace=True)
+normal_test.drop(['site', 'sid', 'ldate', 'lrate', 'llevel'], axis=1, inplace=True)
+
+test_final = pd.concat([out_test, in_test, noise_test, other_test, normal_test]).reset_index(drop=True)
+x_test_f = test_final.drop('leaktype', axis=1)
+
+y_test_f = test_final['leaktype']
+y_test_f_encoded = label_encoder.transform(y_test_f.values.ravel())
+y_pred = rf_classifier.predict(x_test_f)
+accuracy = accuracy_score(y_test_f, y_pred)
+print("Accuracy:", accuracy)
+```
+```
+Accuracy: 0.9043478260869565
+```
+#### 3-2. 랜덤 포레스트 피쳐 가공
+```
+x_test_f = pd.concat([x_test_f.iloc[:, :80], x_test_f.iloc[:, -20:]], axis=1)
+y_pred = rf_classifier_2.predict(x_test_f)
+accuracy = accuracy_score(y_test_f, y_pred)
+print("Accuracy:", accuracy)
+```
+```
+Accuracy: 0.9273657289002557
+```
+#### 3-3. XGBoost 피쳐 가공 모델
+```
+print(classification_report(y_test_f_encoded, y_pred))
+```
+```
+              precision    recall  f1-score   support
+
+           0       0.91      0.92      0.92      1659
+           1       0.90      0.84      0.87       629
+           2       1.00      1.00      1.00      2462
+           3       0.93      0.85      0.89       878
+           4       0.92      0.96      0.94      2192
+
+    accuracy                           0.94      7820
+   macro avg       0.93      0.91      0.92      7820
+weighted avg       0.94      0.94      0.94      7820
+```
+```
+label_mapping = {label: index for index, label in enumerate(label_encoder.classes_)}
+print(label_mapping)
+```
+```
+{'in': 0, 'noise': 1, 'normal': 2, 'other': 3, 'out': 4}
+```
+```
+xgb_classifier_base = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss', random_state=42)
+xgb_classifier_base.fit(X_train_2, y_train_encoded)
+
+y_pred = xgb_classifier_base.predict(x_test_f)
+accuracy = accuracy_score(y_test_f_encoded, y_pred)
+print("Accuracy:", accuracy)
+```
+```
+Accuracy: 0.8928388746803069
+```
+#### 3-4. XGBoost 피쳐 가공 및 하이퍼파라미터 최적화 모델
+```
+print(classification_report(y_test_f, y_pred))
+```
+```
+              precision    recall  f1-score   support
+
+          in       0.92      0.90      0.91      1659
+       noise       0.89      0.80      0.84       629
+      normal       0.97      1.00      0.98      2462
+       other       0.93      0.79      0.86       878
+         out       0.90      0.96      0.93      2192
+
+    accuracy                           0.93      7820
+   macro avg       0.92      0.89      0.90      7820
+weighted avg       0.93      0.93      0.93      7820
+```
+```
+y_pred = xgb_classifier.predict(x_test_f)
+accuracy = accuracy_score(y_test_f_encoded, y_pred)
+print("Accuracy:", accuracy)
+```
+```
+Accuracy: 0.9425831202046036
+```
+이전의 학습 데이터와 마찬가지로, 피쳐를 개선한 모델이 정확도가 더 높아졌고, 하이퍼파라미터를 최적화시켜야 XGBoost가 더 높은 정확도를 보였습니다.
 # Related Work
 
 # Conclusion: Discussion
